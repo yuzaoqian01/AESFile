@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script type="module" src="./index.js"></script>
+</head>
+<body>
+
+  <input type="file" id="file" onchange="fileChange(event)">
+  <img id="img" src="" alt="">
+
+  <script>
+
+    async function fileChange(e){
+       try {
+        console.log(e)
+        let img_ref = document.getElementById('img')
+        let res = await encryptFile(e.target.files[0], {
+          key: '12345678901234567890123456789012',
+          iv: '1234567890123456'
+        })
+        console.log('Processed file URL:', res);
+      } catch (error) {
+        console.error('Error processing file:', error);
+      }
+    }
+
+  </script>
+</body>
+</html>

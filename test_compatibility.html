@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Encryption Compatibility Test</title>
+    <script type="module">
+        import { encryptFile, decryptFile } from './index.js';
+
+        window.testEncryption = async function() {
+            const file = document.getElementById('fileInput').files[0];
+            // 使用Base64编码的32字节密钥和16字节IV
+            const key = "MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE="; // Base64编码的32字节
+            const iv = "MDEyMzQ1Njc4OTAxMjM0NQ=="; // Base64编码的16字节
+
+            try {
+                console.log('Starting encryption...');
+                const encryptResult = await encryptFile(file, {
+                    key: key,
+                    iv: iv,
+                    onProgress: (progress) => {
+                        console.log(`Encryption progress: ${progress}%`);
+                    }
+                });
+
+                console.log('Encryption completed:', encryptResult);
+
+                // 下载加密文件
+                const a = document.createElement('a');
+                a.href = encryptResult.url;
+                a.download = 'js_encrypted_file.bin';
+                a.click();
+
+                // 测试解密
+                console.log('Starting decryption...');
+                const decryptResult = await decryptFile(encryptResult.blob, {
+                    key: key,
+                    iv: iv,
+                    fileType: file.type,
+                    onProgress: (progress) => {
+                        console.log(`Decryption progress: ${progress}%`);
+                    }
+                });
+
+                console.log('Decryption completed:', decryptResult);
+
+                // 下载解密文件
+                const b = document.createElement('a');
+                b.href = decryptResult.url;
+                b.download = 'js_decrypted_file.txt';
+                b.click();
+
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        };
+    </script>
+</head>
+<body>
+    <h2>Encryption Compatibility Test</h2>
+    <input type="file" id="fileInput">
+    <button onclick="testEncryption()">Test Encryption/Decryption</button>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>文件加密解密测试</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.3s ease;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>文件加密解密测试</h1>
+
+    <div class="container">
+        <h2>加密测试</h2>
+        <input type="file" id="encryptFile">
+        <button onclick="encryptTest()">加密文件</button>
+        <div class="progress">
+            <div id="encryptProgress" class="progress-bar"></div>
+        </div>
+        <div id="encryptResult" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>解密测试</h2>
+        <input type="file" id="decryptFile">
+        <button onclick="decryptTest()">解密文件</button>
+        <div class="progress">
+            <div id="decryptProgress" class="progress-bar"></div>
+        </div>
+        <div id="decryptResult" class="result"></div>
+    </div>
+
+    <script type="module">
+        import { encryptFile, decryptFile } from './index.js';
+
+        // 固定的测试密钥和IV
+        const TEST_KEY = "MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=";
+        const TEST_IV = "MDEyMzQ1Njc4OTAxMjM0NQ==";
+
+        window.encryptTest = async function() {
+            const file = document.getElementById('encryptFile').files[0];
+            if (!file) {
+                alert('请先选择要加密的文件');
+                return;
+            }
+
+            try {
+                const result = await encryptFile(file, {
+                    key: TEST_KEY,
+                    iv: TEST_IV,
+                    onProgress: (progress) => {
+                        document.getElementById('encryptProgress').style.width = `${progress}%`;
+                    }
+                });
+
+                // 显示结果
+                const resultDiv = document.getElementById('encryptResult');
+                resultDiv.innerHTML = `
+                    <p>加密成功！</p>
+                    <p>原始文件名: ${result.metadata.originalName}</p>
+                    <p>原始类型: ${result.metadata.originalType}</p>
+                    <p>加密后大小: ${result.metadata.size} 字节</p>
+                    <button onclick="window.location.href='${result.url}';return false;">下载加密文件</button>
+                `;
+            } catch (error) {
+                document.getElementById('encryptResult').innerHTML = `
+                    <p style="color: red;">加密失败: ${error.message}</p>
+                `;
+            }
+        };
+
+        window.decryptTest = async function() {
+            const file = document.getElementById('decryptFile').files[0];
+            if (!file) {
+                alert('请先选择要解密的文件');
+                return;
+            }
+
+            try {
+                const result = await decryptFile(file, {
+                    key: TEST_KEY,
+                    iv: TEST_IV,
+                    fileType: 'application/octet-stream',
+                    onProgress: (progress) => {
+                        document.getElementById('decryptProgress').style.width = `${progress}%`;
+                    }
+                });
+
+                // 显示结果
+                const resultDiv = document.getElementById('decryptResult');
+                resultDiv.innerHTML = `
+                    <p>解密成功！</p>
+                    <button onclick="window.location.href='${result.url}';return false;">下载解密文件</button>
+                `;
+            } catch (error) {
+                document.getElementById('decryptResult').innerHTML = `
+                    <p style="color: red;">解密失败: ${error.message}</p>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>
